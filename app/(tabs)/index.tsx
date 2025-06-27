@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useThemeColors } from '@/hooks/useColorScheme';
 import { StorageService } from '@/utils/storage';
@@ -7,7 +7,7 @@ import { Link, Collection } from '@/types';
 import { LinkCard } from '@/components/LinkCard';
 import { EmptyState } from '@/components/EmptyState';
 import { WelcomeCard } from '@/components/WelcomeCard';
-import { Link as LinkIcon, Filter, Check, Clock, X } from 'lucide-react-native';
+import { Link as LinkIcon, Filter, Check, Clock, X, Zap, ExternalLink } from 'lucide-react-native';
 import { useFocusEffect } from '@react-navigation/native';
 
 export default function HomeScreen() {
@@ -138,6 +138,14 @@ export default function HomeScreen() {
     }
   };
 
+  const handleBoltBadgePress = async () => {
+    try {
+      await Linking.openURL('https://bolt.new/');
+    } catch (error) {
+      console.error('Error opening Bolt.new:', error);
+    }
+  };
+
   const getCollectionForLink = (link: Link): Collection | undefined => {
     return collections.find(c => c.id === link.collectionId);
   };
@@ -224,7 +232,7 @@ export default function HomeScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={styles.header}>
-        <View>
+        <View style={styles.headerLeft}>
           <Text style={[styles.title, { color: colors.text }]}>Your Links</Text>
           <Text style={[styles.subtitle, { color: colors.textMuted }]}>
             {links.length} total • {activeCount} active • {completedCount} completed
@@ -235,6 +243,24 @@ export default function HomeScreen() {
             )}
           </Text>
         </View>
+        
+        {/* Bolt.new Badge */}
+        <TouchableOpacity
+          style={[styles.boltBadge, { 
+            backgroundColor: colors.primary + '10',
+            borderColor: colors.primary + '30'
+          }]}
+          onPress={handleBoltBadgePress}
+          activeOpacity={0.7}
+        >
+          <View style={[styles.boltIconContainer, { backgroundColor: colors.primary + '20' }]}>
+            <Zap size={12} color={colors.primary} />
+          </View>
+          <Text style={[styles.boltBadgeText, { color: colors.primary }]}>
+            Built on Bolt.new
+          </Text>
+          <ExternalLink size={10} color={colors.primary} style={styles.boltExternalIcon} />
+        </TouchableOpacity>
       </View>
 
       {/* Filters */}
@@ -334,9 +360,13 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     paddingHorizontal: 16,
     paddingVertical: 16,
+  },
+  headerLeft: {
+    flex: 1,
+    marginRight: 12,
   },
   title: {
     fontSize: 28,
@@ -349,6 +379,38 @@ const styles = StyleSheet.create({
   },
   reminderStats: {
     fontFamily: 'Inter-SemiBold',
+  },
+  boltBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    borderRadius: 12,
+    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  boltIconContainer: {
+    width: 18,
+    height: 18,
+    borderRadius: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 6,
+  },
+  boltBadgeText: {
+    fontSize: 11,
+    fontFamily: 'Inter-SemiBold',
+    marginRight: 4,
+  },
+  boltExternalIcon: {
+    opacity: 0.7,
   },
   filters: {
     flexDirection: 'row',
