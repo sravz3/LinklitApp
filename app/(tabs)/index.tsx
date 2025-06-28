@@ -336,6 +336,7 @@ export default function HomeScreen() {
               onDelete={handleDeleteLink}
               showCollection={true}
               collection={getCollectionForLink(item)}
+              hideDelete={true} // Hide delete button on homepage
             />
           )}
           showsVerticalScrollIndicator={false}
