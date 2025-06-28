@@ -123,9 +123,10 @@ export default function CreateCollectionScreen() {
 
           {/* Color Selection */}
           <View style={styles.section}>
-            <Text style={[styles.label, { color: colors.text }]}>
-              <Palette size={16} color={colors.textMuted} /> Collection Color
-            </Text>
+            <View style={styles.labelContainer}>
+              <Palette size={16} color={colors.textMuted} />
+              <Text style={[styles.labelText, { color: colors.text }]}>Collection Color</Text>
+            </View>
             <View style={styles.colorGrid}>
               {collectionColors.map((color, index) => (
                 <TouchableOpacity
@@ -239,8 +240,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'Inter-SemiBold',
     marginBottom: 8,
+  },
+  labelContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 8,
+  },
+  labelText: {
+    fontSize: 16,
+    fontFamily: 'Inter-SemiBold',
+    marginLeft: 4,
   },
   input: {
     borderWidth: 1,

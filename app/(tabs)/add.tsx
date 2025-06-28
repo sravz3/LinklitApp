@@ -948,9 +948,10 @@ export default function AddScreen() {
 
           {/* URL Input */}
           <View style={styles.section}>
-            <Text style={[styles.label, { color: colors.text }]}>
-              <LinkIcon size={16} color={colors.textMuted} /> URL
-            </Text>
+            <View style={styles.labelContainer}>
+              <LinkIcon size={16} color={colors.textMuted} />
+              <Text style={[styles.labelText, { color: colors.text }]}>URL</Text>
+            </View>
             <TextInput
               style={[styles.input, { 
                 backgroundColor: colors.surface,
@@ -1014,9 +1015,10 @@ export default function AddScreen() {
 
           {/* Collection Selection */}
           <View style={styles.section}>
-            <Text style={[styles.label, { color: colors.text }]}>
-              <Tag size={16} color={colors.textMuted} /> Collection (Optional)
-            </Text>
+            <View style={styles.labelContainer}>
+              <Tag size={16} color={colors.textMuted} />
+              <Text style={[styles.labelText, { color: colors.text }]}>Collection (Optional)</Text>
+            </View>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               <View style={styles.collectionsList}>
                 <TouchableOpacity
@@ -1211,8 +1213,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'Inter-SemiBold',
     marginBottom: 8,
+  },
+  labelContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 8,
+  },
+  labelText: {
+    fontSize: 16,
+    fontFamily: 'Inter-SemiBold',
+    marginLeft: 4,
   },
   input: {
     borderWidth: 1,
