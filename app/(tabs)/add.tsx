@@ -173,6 +173,9 @@ export default function AddScreen() {
           updatedAt: new Date(),
         };
 
+        console.log('Updating link with ID:', editingLink.id);
+        console.log('Updated data:', updatedLink);
+
         await StorageService.updateLink(editingLink.id, updatedLink);
 
         // Handle reminder notifications
@@ -190,12 +193,18 @@ export default function AddScreen() {
           );
         }
 
-        Alert.alert('Success', 'Link updated successfully!', [
-          { text: 'OK', onPress: () => {
-            // Navigate back to home and clear parameters
-            router.replace('/(tabs)');
-          }}
-        ]);
+        console.log('Link updated successfully');
+
+        // Show success message and navigate back
+        if (Platform.OS === 'web') {
+          // For web, use a simple alert and navigate immediately
+          alert('Link updated successfully!');
+          router.back();
+        } else {
+          Alert.alert('Success', 'Link updated successfully!', [
+            { text: 'OK', onPress: () => router.back() }
+          ]);
+        }
       } else {
         // Create new link
         const preview = await LinkPreviewService.getPreview(url);
@@ -228,11 +237,19 @@ export default function AddScreen() {
         // Reset form after successful creation
         resetForm();
 
-        Alert.alert('Success', 'Link saved successfully!');
+        if (Platform.OS === 'web') {
+          alert('Link saved successfully!');
+        } else {
+          Alert.alert('Success', 'Link saved successfully!');
+        }
       }
     } catch (error) {
       console.error('Error saving link:', error);
-      Alert.alert('Error', 'Failed to save link. Please try again.');
+      if (Platform.OS === 'web') {
+        alert('Failed to save link. Please try again.');
+      } else {
+        Alert.alert('Error', 'Failed to save link. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -241,31 +258,58 @@ export default function AddScreen() {
   const handleDeleteLink = () => {
     if (!editingLink) return;
 
-    Alert.alert(
-      'Delete Link',
-      'Are you sure you want to delete this link? This action cannot be undone.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Delete', 
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await StorageService.deleteLink(editingLink.id);
-              await NotificationService.cancelNotification(`link_${editingLink.id}`);
-              Alert.alert('Success', 'Link deleted successfully!', [
-                { text: 'OK', onPress: () => {
-                  router.replace('/(tabs)');
-                }}
-              ]);
-            } catch (error) {
-              console.error('Error deleting link:', error);
-              Alert.alert('Error', 'Failed to delete link.');
+    const confirmDelete = () => {
+      Alert.alert(
+        'Delete Link',
+        'Are you sure you want to delete this link? This action cannot be undone.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { 
+            text: 'Delete', 
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                await StorageService.deleteLink(editingLink.id);
+                await NotificationService.cancelNotification(`link_${editingLink.id}`);
+                
+                if (Platform.OS === 'web') {
+                  alert('Link deleted successfully!');
+                  router.back();
+                } else {
+                  Alert.alert('Success', 'Link deleted successfully!', [
+                    { text: 'OK', onPress: () => router.back() }
+                  ]);
+                }
+              } catch (error) {
+                console.error('Error deleting link:', error);
+                if (Platform.OS === 'web') {
+                  alert('Failed to delete link.');
+                } else {
+                  Alert.alert('Error', 'Failed to delete link.');
+                }
+              }
             }
           }
-        }
-      ]
-    );
+        ]
+      );
+    };
+
+    if (Platform.OS === 'web') {
+      if (confirm('Are you sure you want to delete this link? This action cannot be undone.')) {
+        StorageService.deleteLink(editingLink.id)
+          .then(() => {
+            NotificationService.cancelNotification(`link_${editingLink.id}`);
+            alert('Link deleted successfully!');
+            router.back();
+          })
+          .catch((error) => {
+            console.error('Error deleting link:', error);
+            alert('Failed to delete link.');
+          });
+      }
+    } else {
+      confirmDelete();
+    }
   };
 
   const handleOpenLink = async () => {
@@ -279,7 +323,7 @@ export default function AddScreen() {
   };
 
   const handleBackPress = () => {
-    router.replace('/(tabs)');
+    router.back();
   };
 
   // Quick reminder options
@@ -351,7 +395,11 @@ export default function AddScreen() {
     
     // Check if the selected time is in the future
     if (combinedDateTime <= new Date()) {
-      Alert.alert('Invalid Time', 'Please select a future date and time for your reminder.');
+      if (Platform.OS === 'web') {
+        alert('Please select a future date and time for your reminder.');
+      } else {
+        Alert.alert('Invalid Time', 'Please select a future date and time for your reminder.');
+      }
       return;
     }
     
