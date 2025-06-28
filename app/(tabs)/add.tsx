@@ -281,107 +281,116 @@ export default function AddScreen() {
     router.replace('/(tabs)');
   };
 
-  const showReminderOptions = () => {
-    const reminderOptions = [
-      { text: 'Cancel', style: 'cancel' as const },
-      ...(reminder ? [{ 
-        text: 'Remove Reminder', 
-        style: 'destructive' as const,
-        onPress: () => setReminder(null)
-      }] : []),
-      { 
-        text: 'In 1 hour', 
-        onPress: () => {
-          const reminderTime = new Date();
-          reminderTime.setHours(reminderTime.getHours() + 1);
-          setReminder(reminderTime);
-        }
-      },
-      { 
-        text: 'Tomorrow 9 AM', 
-        onPress: () => {
-          const reminderTime = new Date();
-          reminderTime.setDate(reminderTime.getDate() + 1);
-          reminderTime.setHours(9, 0, 0, 0);
-          setReminder(reminderTime);
-        }
-      },
-      { 
-        text: 'Next week', 
-        onPress: () => {
-          const reminderTime = new Date();
-          reminderTime.setDate(reminderTime.getDate() + 7);
-          reminderTime.setHours(9, 0, 0, 0);
-          setReminder(reminderTime);
-        }
-      },
-      {
-        text: 'Custom Date & Time',
-        onPress: () => {
-          // Initialize with current reminder or default to tomorrow 9 AM
-          const defaultTime = reminder || (() => {
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            tomorrow.setHours(9, 0, 0, 0);
-            return tomorrow;
-          })();
-          
-          // Set time picker values
-          const hours24 = defaultTime.getHours();
-          const minutes = defaultTime.getMinutes();
-          const hours12 = hours24 === 0 ? 12 : hours24 > 12 ? hours24 - 12 : hours24;
-          const ampm = hours24 < 12;
-          
-          setPickerState({
-            selectedDate: new Date(defaultTime),
-            currentMonth: new Date(defaultTime),
-            selectedHour: hours12,
-            selectedMinute: minutes,
-            isAM: ampm
-          });
-          
-          setShowDateTimePicker(true);
-        }
-      }
-    ];
+  // Quick reminder options
+  const setQuickReminder = (type: 'hour' | 'tomorrow' | 'week') => {
+    const reminderTime = new Date();
+    
+    switch (type) {
+      case 'hour':
+        reminderTime.setHours(reminderTime.getHours() + 1);
+        break;
+      case 'tomorrow':
+        reminderTime.setDate(reminderTime.getDate() + 1);
+        reminderTime.setHours(9, 0, 0, 0);
+        break;
+      case 'week':
+        reminderTime.setDate(reminderTime.getDate() + 7);
+        reminderTime.setHours(9, 0, 0, 0);
+        break;
+    }
+    
+    setReminder(reminderTime);
+  };
 
-    Alert.alert(
-      'Set Reminder',
-      Platform.OS === 'web' 
-        ? 'When would you like to be reminded? (Reminders will appear in the app when you visit)'
-        : 'When would you like to be reminded?',
-      reminderOptions
-    );
+  const showCustomDateTimePicker = () => {
+    // Initialize with current reminder or default to tomorrow 9 AM
+    const defaultTime = reminder || (() => {
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      tomorrow.setHours(9, 0, 0, 0);
+      return tomorrow;
+    })();
+    
+    // Set time picker values
+    const hours24 = defaultTime.getHours();
+    const minutes = defaultTime.getMinutes();
+    const hours12 = hours24 === 0 ? 12 : hours24 > 12 ? hours24 - 12 : hours24;
+    const ampm = hours24 < 12;
+    
+    setPickerState({
+      selectedDate: new Date(defaultTime),
+      currentMonth: new Date(defaultTime),
+      selectedHour: hours12,
+      selectedMinute: minutes,
+      isAM: ampm
+    });
+    
+    setShowDateTimePicker(true);
   };
 
   const handleSetReminder = () => {
-    console.log('Reminder button clicked'); // Debug log
-    try {
-      showReminderOptions();
-    } catch (error) {
-      console.error('Error showing reminder options:', error);
-      // Fallback: directly show the date/time picker
-      const defaultTime = reminder || (() => {
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        tomorrow.setHours(9, 0, 0, 0);
-        return tomorrow;
-      })();
-      
-      const hours24 = defaultTime.getHours();
-      const minutes = defaultTime.getMinutes();
-      const hours12 = hours24 === 0 ? 12 : hours24 > 12 ? hours24 - 12 : hours24;
-      const ampm = hours24 < 12;
-      
-      setPickerState({
-        selectedDate: new Date(defaultTime),
-        currentMonth: new Date(defaultTime),
-        selectedHour: hours12,
-        selectedMinute: minutes,
-        isAM: ampm
-      });
-      
-      setShowDateTimePicker(true);
+    console.log('Reminder button clicked');
+    
+    if (Platform.OS === 'web') {
+      // On web, show a simplified reminder interface
+      Alert.alert(
+        'Set Reminder',
+        'Choose when you\'d like to be reminded about this link:',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          ...(reminder ? [{ 
+            text: 'Remove Reminder', 
+            style: 'destructive',
+            onPress: () => setReminder(null)
+          }] : []),
+          { 
+            text: 'In 1 hour', 
+            onPress: () => setQuickReminder('hour')
+          },
+          { 
+            text: 'Tomorrow 9 AM', 
+            onPress: () => setQuickReminder('tomorrow')
+          },
+          { 
+            text: 'Next week', 
+            onPress: () => setQuickReminder('week')
+          },
+          {
+            text: 'Custom Date & Time',
+            onPress: showCustomDateTimePicker
+          }
+        ]
+      );
+    } else {
+      // On mobile, show the full alert with all options
+      Alert.alert(
+        'Set Reminder',
+        'When would you like to be reminded?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          ...(reminder ? [{ 
+            text: 'Remove Reminder', 
+            style: 'destructive',
+            onPress: () => setReminder(null)
+          }] : []),
+          { 
+            text: 'In 1 hour', 
+            onPress: () => setQuickReminder('hour')
+          },
+          { 
+            text: 'Tomorrow 9 AM', 
+            onPress: () => setQuickReminder('tomorrow')
+          },
+          { 
+            text: 'Next week', 
+            onPress: () => setQuickReminder('week')
+          },
+          {
+            text: 'Custom Date & Time',
+            onPress: showCustomDateTimePicker
+          }
+        ]
+      );
     }
   };
 
