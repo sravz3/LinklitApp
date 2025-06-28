@@ -13,6 +13,7 @@ interface LinkCardProps {
   onDelete: (linkId: string) => void;
   showCollection?: boolean;
   collection?: Collection;
+  hideDelete?: boolean; // New prop to control delete button visibility
 }
 
 export function LinkCard({ 
@@ -21,7 +22,8 @@ export function LinkCard({
   onEdit, 
   onDelete, 
   showCollection = true,
-  collection 
+  collection,
+  hideDelete = false // Default to false to maintain existing behavior
 }: LinkCardProps) {
   const colors = useThemeColors();
 
@@ -166,12 +168,14 @@ export function LinkCard({
           >
             <Pencil size={16} color={colors.textMuted} />
           </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={handleDeletePress}
-          >
-            <Trash2 size={16} color={colors.error} />
-          </TouchableOpacity>
+          {!hideDelete && (
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={handleDeletePress}
+            >
+              <Trash2 size={16} color={colors.error} />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 

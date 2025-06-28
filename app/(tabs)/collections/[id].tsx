@@ -299,6 +299,7 @@ export default function CollectionDetailScreen() {
               onEdit={handleEditLink}
               onDelete={handleDeleteLink}
               showCollection={false}
+              hideDelete={true} // Hide delete button in collection view
             />
           )}
           showsVerticalScrollIndicator={false}
