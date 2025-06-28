@@ -28,7 +28,8 @@ export default function CollectionDetailScreen() {
       
       const foundCollection = savedCollections.find(c => c.id === id);
       if (!foundCollection) {
-        router.back();
+        // Navigate back to collections list instead of home
+        router.replace('/(tabs)/collections');
         return;
       }
       
@@ -123,6 +124,11 @@ export default function CollectionDetailScreen() {
     router.push('/(tabs)/add');
   };
 
+  const handleBackPress = () => {
+    // Navigate back to collections list instead of home
+    router.back();
+  };
+
   // Get reminder statistics for this collection
   const getReminderStats = () => {
     const now = new Date();
@@ -169,7 +175,7 @@ export default function CollectionDetailScreen() {
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => router.back()}
+          onPress={handleBackPress}
         >
           <ArrowLeft size={24} color={colors.text} />
         </TouchableOpacity>

@@ -60,7 +60,7 @@ export default function EditCollectionScreen() {
   };
 
   const navigateToCollections = () => {
-    // Use replace to ensure we go back to the collections tab and clear the modal stack
+    // Navigate back to collections list
     router.replace('/(tabs)/collections');
   };
 
@@ -170,6 +170,11 @@ export default function EditCollectionScreen() {
     }
   };
 
+  const handleBackPress = () => {
+    // Navigate back to collections list
+    router.back();
+  };
+
   if (initialLoading) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -200,7 +205,7 @@ export default function EditCollectionScreen() {
         <View style={[styles.header, { borderBottomColor: colors.border }]}>
           <TouchableOpacity
             style={styles.backButton}
-            onPress={navigateToCollections}
+            onPress={handleBackPress}
           >
             <ArrowLeft size={24} color={colors.text} />
           </TouchableOpacity>

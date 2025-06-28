@@ -41,6 +41,7 @@ export default function TabLayout() {
           tabBarIcon: ({ size, color }) => {
             return <FolderOpen size={size} color={color} />;
           },
+          // Remove the href override to let it navigate to the index properly
         }}
       />
       <Tabs.Screen
