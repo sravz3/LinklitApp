@@ -68,7 +68,12 @@ export default function EditCollectionScreen() {
     if (!collection) return;
 
     if (!name.trim()) {
-      Alert.alert('Error', 'Please enter a collection name');
+      const message = 'Please enter a collection name';
+      if (Platform.OS === 'web') {
+        alert(message);
+      } else {
+        Alert.alert('Error', message);
+      }
       return;
     }
 
@@ -89,11 +94,20 @@ export default function EditCollectionScreen() {
       
       // Show success message after navigation
       setTimeout(() => {
-        Alert.alert('Success', 'Collection updated successfully!');
+        if (Platform.OS === 'web') {
+          alert('Collection updated successfully!');
+        } else {
+          Alert.alert('Success', 'Collection updated successfully!');
+        }
       }, 100);
     } catch (error) {
       console.error('Error updating collection:', error);
-      Alert.alert('Error', 'Failed to update collection. Please try again.');
+      const message = 'Failed to update collection. Please try again.';
+      if (Platform.OS === 'web') {
+        alert(message);
+      } else {
+        Alert.alert('Error', message);
+      }
     } finally {
       setLoading(false);
     }
@@ -107,66 +121,84 @@ export default function EditCollectionScreen() {
 
     console.log('Delete button pressed for collection:', collection.name);
     
-    // Use setTimeout to ensure the Alert shows up properly
-    setTimeout(() => {
-      Alert.alert(
-        'Delete Collection',
-        `Are you sure you want to delete "${collection.name}"?\n\nThis will delete the collection but keep all links. Links will become uncategorized.`,
-        [
-          { 
-            text: 'Cancel', 
-            style: 'cancel',
-            onPress: () => console.log('Delete cancelled')
-          },
-          { 
-            text: 'Delete', 
-            style: 'destructive',
-            onPress: () => performDelete()
+    const performDelete = async () => {
+      console.log('Performing delete for collection:', collection.id);
+      setLoading(true);
+      
+      try {
+        // First, get all links and update those that belong to this collection
+        const links = await StorageService.getLinks();
+        const linksToUpdate = links.filter(link => link.collectionId === collection.id);
+        
+        console.log(`Found ${linksToUpdate.length} links to update`);
+        
+        // Update each link to remove the collection reference
+        for (const link of linksToUpdate) {
+          await StorageService.updateLink(link.id, { 
+            collectionId: undefined,
+            updatedAt: new Date()
+          });
+        }
+
+        // Then delete the collection
+        await StorageService.deleteCollection(collection.id);
+        
+        console.log('Collection deleted successfully');
+        
+        // Navigate back immediately after successful delete
+        navigateToCollections();
+        
+        // Show success message after navigation
+        setTimeout(() => {
+          if (Platform.OS === 'web') {
+            alert('Collection deleted successfully!');
+          } else {
+            Alert.alert('Success', 'Collection deleted successfully!');
           }
-        ],
-        { cancelable: true }
-      );
-    }, 50);
-  };
-
-  const performDelete = async () => {
-    if (!collection) return;
-    
-    console.log('Performing delete for collection:', collection.id);
-    setLoading(true);
-    
-    try {
-      // First, get all links and update those that belong to this collection
-      const links = await StorageService.getLinks();
-      const linksToUpdate = links.filter(link => link.collectionId === collection.id);
-      
-      console.log(`Found ${linksToUpdate.length} links to update`);
-      
-      // Update each link to remove the collection reference
-      for (const link of linksToUpdate) {
-        await StorageService.updateLink(link.id, { 
-          collectionId: undefined,
-          updatedAt: new Date()
-        });
+        }, 100);
+      } catch (error) {
+        console.error('Error deleting collection:', error);
+        const message = 'Failed to delete collection. Please try again.';
+        if (Platform.OS === 'web') {
+          alert(message);
+        } else {
+          Alert.alert('Error', message);
+        }
+      } finally {
+        setLoading(false);
       }
+    };
 
-      // Then delete the collection
-      await StorageService.deleteCollection(collection.id);
+    // Platform-specific confirmation dialogs
+    if (Platform.OS === 'web') {
+      const confirmed = confirm(
+        `Are you sure you want to delete "${collection.name}"?\n\nThis will delete the collection but keep all links. Links will become uncategorized.\n\nThis action cannot be undone.`
+      );
       
-      console.log('Collection deleted successfully');
-      
-      // Navigate back immediately after successful delete
-      navigateToCollections();
-      
-      // Show success message after navigation
+      if (confirmed) {
+        performDelete();
+      }
+    } else {
+      // Use setTimeout to ensure the Alert shows up properly on mobile
       setTimeout(() => {
-        Alert.alert('Success', 'Collection deleted successfully!');
-      }, 100);
-    } catch (error) {
-      console.error('Error deleting collection:', error);
-      Alert.alert('Error', 'Failed to delete collection. Please try again.');
-    } finally {
-      setLoading(false);
+        Alert.alert(
+          'Delete Collection',
+          `Are you sure you want to delete "${collection.name}"?\n\nThis will delete the collection but keep all links. Links will become uncategorized.`,
+          [
+            { 
+              text: 'Cancel', 
+              style: 'cancel',
+              onPress: () => console.log('Delete cancelled')
+            },
+            { 
+              text: 'Delete', 
+              style: 'destructive',
+              onPress: performDelete
+            }
+          ],
+          { cancelable: true }
+        );
+      }, 50);
     }
   };
 
@@ -206,14 +238,18 @@ export default function EditCollectionScreen() {
           <TouchableOpacity
             style={styles.backButton}
             onPress={handleBackPress}
+            activeOpacity={0.7}
           >
             <ArrowLeft size={24} color={colors.text} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, { color: colors.text }]}>Edit Collection</Text>
           <TouchableOpacity
-            style={styles.deleteButton}
+            style={[styles.deleteButton, {
+              opacity: loading ? 0.5 : 1
+            }]}
             onPress={handleDeleteCollection}
             disabled={loading}
+            activeOpacity={0.7}
           >
             <Trash2 size={20} color={loading ? colors.textMuted : colors.error} />
           </TouchableOpacity>
@@ -307,6 +343,7 @@ export default function EditCollectionScreen() {
                   ]}
                   onPress={() => setSelectedColor(color)}
                   disabled={loading}
+                  activeOpacity={0.7}
                 >
                   {selectedColor === color && (
                     <View style={[styles.colorCheck, { backgroundColor: colors.card }]}>
@@ -361,6 +398,7 @@ export default function EditCollectionScreen() {
             ]}
             onPress={handleSaveCollection}
             disabled={!name.trim() || loading}
+            activeOpacity={0.7}
           >
             <Save size={16} color={colors.card} />
             <Text style={[styles.saveButtonText, { color: colors.card }]}>
