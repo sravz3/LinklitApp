@@ -237,10 +237,14 @@ export default function AddScreen() {
         // Reset form after successful creation
         resetForm();
 
+        // Show success message and navigate to homepage
         if (Platform.OS === 'web') {
           alert('Link saved successfully!');
+          router.replace('/(tabs)');
         } else {
-          Alert.alert('Success', 'Link saved successfully!');
+          Alert.alert('Success', 'Link saved successfully!', [
+            { text: 'OK', onPress: () => router.replace('/(tabs)') }
+          ]);
         }
       }
     } catch (error) {
