@@ -3,7 +3,6 @@ import { Link, Collection } from '@/types';
 
 const LINKS_KEY = '@linklit_links';
 const COLLECTIONS_KEY = '@linklit_collections';
-const WELCOME_DISMISSED_KEY = '@linklit_welcome_dismissed';
 
 class StorageServiceClass {
   // Links
@@ -110,25 +109,6 @@ class StorageServiceClass {
     } catch (error) {
       console.error('Error deleting collection:', error);
       throw error; // Re-throw to allow calling code to handle the error
-    }
-  }
-
-  // Welcome banner dismissal
-  async isWelcomeDismissed(): Promise<boolean> {
-    try {
-      const dismissed = await AsyncStorage.getItem(WELCOME_DISMISSED_KEY);
-      return dismissed === 'true';
-    } catch (error) {
-      console.error('Error getting welcome dismissed status:', error);
-      return false;
-    }
-  }
-
-  async setWelcomeDismissed(): Promise<void> {
-    try {
-      await AsyncStorage.setItem(WELCOME_DISMISSED_KEY, 'true');
-    } catch (error) {
-      console.error('Error setting welcome dismissed status:', error);
     }
   }
 }

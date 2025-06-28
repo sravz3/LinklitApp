@@ -6,7 +6,6 @@ import { StorageService } from '@/utils/storage';
 import { Link, Collection } from '@/types';
 import { LinkCard } from '@/components/LinkCard';
 import { EmptyState } from '@/components/EmptyState';
-import { WelcomeCard } from '@/components/WelcomeCard';
 import { Link as LinkIcon, Filter, Check, Clock, X, Zap, ExternalLink } from 'lucide-react-native';
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -18,44 +17,21 @@ export default function HomeScreen() {
   const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('active');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [showWelcome, setShowWelcome] = useState(false);
 
   const loadData = async () => {
     try {
-      const [savedLinks, savedCollections, welcomeDismissed] = await Promise.all([
+      const [savedLinks, savedCollections] = await Promise.all([
         StorageService.getLinks(),
-        StorageService.getCollections(),
-        StorageService.isWelcomeDismissed()
+        StorageService.getCollections()
       ]);
       
       console.log('Loading data:', {
         linksCount: savedLinks.length,
-        collectionsCount: savedCollections.length,
-        welcomeDismissed
+        collectionsCount: savedCollections.length
       });
       
       setLinks(savedLinks);
       setCollections(savedCollections);
-      
-      // Show welcome card if:
-      // 1. Welcome hasn't been permanently dismissed
-      // 2. Default collection exists
-      // 3. User hasn't added custom links (only default links exist)
-      if (!welcomeDismissed) {
-        const hasDefaultCollection = savedCollections.some(c => c.id === 'default-bolt-hackathon');
-        const hasCustomLinks = savedLinks.some(l => !l.id?.startsWith('default-link-'));
-        const shouldShowWelcome = hasDefaultCollection && !hasCustomLinks;
-        
-        console.log('Welcome card logic:', {
-          hasDefaultCollection,
-          hasCustomLinks,
-          shouldShowWelcome
-        });
-        
-        setShowWelcome(shouldShowWelcome);
-      } else {
-        setShowWelcome(false);
-      }
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {
@@ -141,18 +117,6 @@ export default function HomeScreen() {
       await loadData();
     } catch (error) {
       console.error('Error deleting link:', error);
-    }
-  };
-
-  const handleWelcomeDismiss = async () => {
-    try {
-      await StorageService.setWelcomeDismissed();
-      setShowWelcome(false);
-      console.log('Welcome card dismissed permanently');
-    } catch (error) {
-      console.error('Error dismissing welcome card:', error);
-      // Still hide the welcome card even if storage fails
-      setShowWelcome(false);
     }
   };
 
@@ -328,11 +292,6 @@ export default function HomeScreen() {
             Links with reminders appear first
           </Text>
         </View>
-      )}
-
-      {/* Welcome Card - Show prominently when conditions are met */}
-      {showWelcome && (
-        <WelcomeCard onDismiss={handleWelcomeDismiss} />
       )}
 
       {/* Links List */}
