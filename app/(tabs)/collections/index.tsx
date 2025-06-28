@@ -160,6 +160,7 @@ export default function CollectionsScreen() {
   const emptyStateContent = getEmptyStateContent();
   const activeCount = collections.filter(c => !c.isCompleted).length;
   const completedCount = collections.filter(c => c.isCompleted).length;
+  const totalCount = collections.length;
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -168,9 +169,8 @@ export default function CollectionsScreen() {
         <View>
           <Text style={[styles.title, { color: colors.text }]}>Collections</Text>
           <Text style={[styles.subtitle, { color: colors.textMuted }]}>
-            {(collections?.length ?? 0)} total • {(activeCount ?? 0)} active • {(completedCount ?? 0)} completed
+            {String(totalCount)} total • {String(activeCount)} active • {String(completedCount)} completed
           </Text>
-
         </View>
         <TouchableOpacity
           style={[styles.addButton, { backgroundColor: colors.primary }]}

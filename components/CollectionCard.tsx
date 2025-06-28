@@ -14,6 +14,9 @@ interface CollectionCardProps {
 export function CollectionCard({ collection, onPress, onToggleComplete, onEdit }: CollectionCardProps) {
   const colors = useThemeColors();
 
+  // Ensure linkCount is always a number
+  const linkCount = typeof collection.linkCount === 'number' ? collection.linkCount : 0;
+
   return (
     <TouchableOpacity
       style={[styles.container, { 
@@ -40,7 +43,7 @@ export function CollectionCard({ collection, onPress, onToggleComplete, onEdit }
               {collection.name}
             </Text>
             <Text style={[styles.linkCount, { color: colors.textMuted }]}>
-              {collection.linkCount} {collection.linkCount === 1 ? 'link' : 'links'}
+              {String(linkCount)} {linkCount === 1 ? 'link' : 'links'}
             </Text>
           </View>
         </View>

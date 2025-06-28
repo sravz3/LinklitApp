@@ -71,4 +71,8 @@ export const Colors = {
       gray: '#9CA3AF'
     }
   }
-};
+} as const;
+
+// Type for color scheme
+export type ColorScheme = keyof typeof Colors;
+export type ThemeColors = typeof Colors.light;
