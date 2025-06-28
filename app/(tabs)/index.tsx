@@ -289,8 +289,7 @@ export default function HomeScreen() {
           borderColor: colors.border
         }]}>
           <View style={styles.reminderSummaryContent}>
-            <Clock size={16} color={colors.primary} />
-            <Text style={[styles.reminderSummaryText, { color: colors.text }]}>
+            <Clock size={16} color={colors.primary} /><Text style={[styles.reminderSummaryText, { color: colors.text }]}>
               {reminderStats.overdueCount > 0 && (
                 <Text style={{ color: colors.error }}>
                   {reminderStats.overdueCount} overdue
