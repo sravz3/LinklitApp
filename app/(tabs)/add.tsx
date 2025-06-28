@@ -281,8 +281,7 @@ export default function AddScreen() {
     router.replace('/(tabs)');
   };
 
-  const handleSetReminder = () => {
-    // Show quick options and custom date/time option
+  const showReminderOptions = () => {
     const reminderOptions = [
       { text: 'Cancel', style: 'cancel' as const },
       ...(reminder ? [{ 
@@ -349,10 +348,20 @@ export default function AddScreen() {
     Alert.alert(
       'Set Reminder',
       Platform.OS === 'web' 
-        ? 'When would you like to be reminded? (Reminders will appear in the app)'
+        ? 'When would you like to be reminded? (Reminders will appear in the app when you visit)'
         : 'When would you like to be reminded?',
       reminderOptions
     );
+  };
+
+  const handleSetReminder = () => {
+    if (Platform.OS === 'web') {
+      // On web, show the options directly without additional explanation
+      showReminderOptions();
+    } else {
+      // On mobile, show the standard reminder options
+      showReminderOptions();
+    }
   };
 
   const handleDateTimeConfirm = (localPickerState: typeof pickerState) => {
