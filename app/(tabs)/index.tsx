@@ -253,10 +253,10 @@ export default function HomeScreen() {
         <View style={styles.headerLeft}>
           <Text style={[styles.title, { color: colors.text }]}>Your Links</Text>
           <Text style={[styles.subtitle, { color: colors.textMuted }]}>
-            {links.length} total • {activeCount} active • {completedCount} completed
+            {String(links.length)} total • {String(activeCount)} active • {String(completedCount)} completed
             {reminderStats.totalWithReminders > 0 && (
               <Text style={[styles.reminderStats, { color: colors.primary }]}>
-                {' '}• {reminderStats.totalWithReminders} with reminders
+                {' '}• {String(reminderStats.totalWithReminders)} with reminders
               </Text>
             )}
           </Text>
@@ -311,7 +311,7 @@ export default function HomeScreen() {
             <Text style={[styles.reminderSummaryText, { color: colors.text }]}>
               {reminderStats.overdueCount > 0 && (
                 <Text style={{ color: colors.error }}>
-                  {reminderStats.overdueCount} overdue
+                  {String(reminderStats.overdueCount)} overdue
                 </Text>
               )}
               {reminderStats.overdueCount > 0 && reminderStats.upcomingCount > 0 && (
@@ -319,7 +319,7 @@ export default function HomeScreen() {
               )}
               {reminderStats.upcomingCount > 0 && (
                 <Text style={{ color: colors.primary }}>
-                  {reminderStats.upcomingCount} upcoming
+                  {String(reminderStats.upcomingCount)} upcoming
                 </Text>
               )}
             </Text>

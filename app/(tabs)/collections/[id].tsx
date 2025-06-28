@@ -189,10 +189,10 @@ export default function CollectionDetailScreen() {
                 {collection.name}
               </Text>
               <Text style={[styles.headerSubtitle, { color: colors.textMuted }]}>
-                {links.length} {links.length === 1 ? 'link' : 'links'}
+                {String(links.length)} {links.length === 1 ? 'link' : 'links'}
                 {reminderStats.totalWithReminders > 0 && (
                   <Text style={[styles.reminderCount, { color: colors.primary }]}>
-                    {' '}• {reminderStats.totalWithReminders} with reminders
+                    {' '}• {String(reminderStats.totalWithReminders)} with reminders
                   </Text>
                 )}
               </Text>
@@ -220,21 +220,21 @@ export default function CollectionDetailScreen() {
       <View style={[styles.statsBar, { backgroundColor: colors.surface, borderColor: colors.border }]}>
         <View style={styles.stat}>
           <Text style={[styles.statNumber, { color: colors.primary }]}>
-            {links.filter(l => !l.isCompleted).length}
+            {String(links.filter(l => !l.isCompleted).length)}
           </Text>
           <Text style={[styles.statLabel, { color: colors.textMuted }]}>Active</Text>
         </View>
         <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
         <View style={styles.stat}>
           <Text style={[styles.statNumber, { color: colors.success }]}>
-            {links.filter(l => l.isCompleted).length}
+            {String(links.filter(l => l.isCompleted).length)}
           </Text>
           <Text style={[styles.statLabel, { color: colors.textMuted }]}>Completed</Text>
         </View>
         <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
         <View style={styles.stat}>
           <Text style={[styles.statNumber, { color: colors.text }]}>
-            {links.length}
+            {String(links.length)}
           </Text>
           <Text style={[styles.statLabel, { color: colors.textMuted }]}>Total</Text>
         </View>
@@ -251,7 +251,7 @@ export default function CollectionDetailScreen() {
             <Text style={[styles.reminderSummaryText, { color: colors.text }]}>
               {reminderStats.overdueCount > 0 && (
                 <Text style={{ color: colors.error }}>
-                  {reminderStats.overdueCount} overdue
+                  {String(reminderStats.overdueCount)} overdue
                 </Text>
               )}
               {reminderStats.overdueCount > 0 && reminderStats.upcomingCount > 0 && (
@@ -259,7 +259,7 @@ export default function CollectionDetailScreen() {
               )}
               {reminderStats.upcomingCount > 0 && (
                 <Text style={{ color: colors.primary }}>
-                  {reminderStats.upcomingCount} upcoming
+                  {String(reminderStats.upcomingCount)} upcoming
                 </Text>
               )}
             </Text>
