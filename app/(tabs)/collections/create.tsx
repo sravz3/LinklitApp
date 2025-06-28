@@ -28,8 +28,18 @@ export default function CreateCollectionScreen() {
   const collectionColors = Object.values(Colors.light.collections);
 
   const handleSaveCollection = async () => {
+    console.log('Save collection button pressed');
+    console.log('Name:', name);
+    console.log('Description:', description);
+    console.log('Selected color:', selectedColor);
+
     if (!name.trim()) {
-      Alert.alert('Error', 'Please enter a collection name');
+      const message = 'Please enter a collection name';
+      if (Platform.OS === 'web') {
+        alert(message);
+      } else {
+        Alert.alert('Error', message);
+      }
       return;
     }
 
@@ -47,17 +57,33 @@ export default function CreateCollectionScreen() {
         linkCount: 0,
       };
 
+      console.log('Creating collection:', newCollection);
       await StorageService.addCollection(newCollection);
+      console.log('Collection created successfully');
       
-      Alert.alert('Success', 'Collection created successfully!', [
-        { text: 'OK', onPress: () => router.back() }
-      ]);
+      if (Platform.OS === 'web') {
+        alert('Collection created successfully!');
+        router.back();
+      } else {
+        Alert.alert('Success', 'Collection created successfully!', [
+          { text: 'OK', onPress: () => router.back() }
+        ]);
+      }
     } catch (error) {
       console.error('Error creating collection:', error);
-      Alert.alert('Error', 'Failed to create collection. Please try again.');
+      const message = 'Failed to create collection. Please try again.';
+      if (Platform.OS === 'web') {
+        alert(message);
+      } else {
+        Alert.alert('Error', message);
+      }
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleBackPress = () => {
+    router.back();
   };
 
   return (
@@ -70,7 +96,7 @@ export default function CreateCollectionScreen() {
         <View style={[styles.header, { borderBottomColor: colors.border }]}>
           <TouchableOpacity
             style={styles.backButton}
-            onPress={() => router.back()}
+            onPress={handleBackPress}
           >
             <ArrowLeft size={24} color={colors.text} />
           </TouchableOpacity>
@@ -93,6 +119,7 @@ export default function CreateCollectionScreen() {
               value={name}
               onChangeText={setName}
               maxLength={50}
+              editable={!loading}
             />
             <Text style={[styles.helperText, { color: colors.textMuted }]}>
               {name.length}/50 characters
@@ -115,6 +142,7 @@ export default function CreateCollectionScreen() {
               multiline
               textAlignVertical="top"
               maxLength={200}
+              editable={!loading}
             />
             <Text style={[styles.helperText, { color: colors.textMuted }]}>
               {description.length}/200 characters
@@ -137,6 +165,8 @@ export default function CreateCollectionScreen() {
                     selectedColor === color && styles.selectedColor
                   ]}
                   onPress={() => setSelectedColor(color)}
+                  disabled={loading}
+                  activeOpacity={0.7}
                 >
                   {selectedColor === color && (
                     <View style={[styles.colorCheck, { backgroundColor: colors.card }]}>
@@ -191,6 +221,7 @@ export default function CreateCollectionScreen() {
             ]}
             onPress={handleSaveCollection}
             disabled={!name.trim() || loading}
+            activeOpacity={0.7}
           >
             <Save size={16} color={colors.card} />
             <Text style={[styles.saveButtonText, { color: colors.card }]}>
