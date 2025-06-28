@@ -40,6 +40,7 @@ export default function AddScreen() {
   const [reminder, setReminder] = useState<Date | null>(null);
   const [loading, setLoading] = useState(false);
   const [showDateTimePicker, setShowDateTimePicker] = useState(false);
+  const [showReminderOptions, setShowReminderOptions] = useState(false);
   
   // Separate state for the picker that doesn't cause re-renders
   const [pickerState, setPickerState] = useState({
@@ -300,6 +301,7 @@ export default function AddScreen() {
     }
     
     setReminder(reminderTime);
+    setShowReminderOptions(false);
   };
 
   const showCustomDateTimePicker = () => {
@@ -325,73 +327,13 @@ export default function AddScreen() {
       isAM: ampm
     });
     
+    setShowReminderOptions(false);
     setShowDateTimePicker(true);
   };
 
   const handleSetReminder = () => {
     console.log('Reminder button clicked');
-    
-    if (Platform.OS === 'web') {
-      // On web, show a simplified reminder interface
-      Alert.alert(
-        'Set Reminder',
-        'Choose when you\'d like to be reminded about this link:',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          ...(reminder ? [{ 
-            text: 'Remove Reminder', 
-            style: 'destructive',
-            onPress: () => setReminder(null)
-          }] : []),
-          { 
-            text: 'In 1 hour', 
-            onPress: () => setQuickReminder('hour')
-          },
-          { 
-            text: 'Tomorrow 9 AM', 
-            onPress: () => setQuickReminder('tomorrow')
-          },
-          { 
-            text: 'Next week', 
-            onPress: () => setQuickReminder('week')
-          },
-          {
-            text: 'Custom Date & Time',
-            onPress: showCustomDateTimePicker
-          }
-        ]
-      );
-    } else {
-      // On mobile, show the full alert with all options
-      Alert.alert(
-        'Set Reminder',
-        'When would you like to be reminded?',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          ...(reminder ? [{ 
-            text: 'Remove Reminder', 
-            style: 'destructive',
-            onPress: () => setReminder(null)
-          }] : []),
-          { 
-            text: 'In 1 hour', 
-            onPress: () => setQuickReminder('hour')
-          },
-          { 
-            text: 'Tomorrow 9 AM', 
-            onPress: () => setQuickReminder('tomorrow')
-          },
-          { 
-            text: 'Next week', 
-            onPress: () => setQuickReminder('week')
-          },
-          {
-            text: 'Custom Date & Time',
-            onPress: showCustomDateTimePicker
-          }
-        ]
-      );
-    }
+    setShowReminderOptions(true);
   };
 
   const handleDateTimeConfirm = (localPickerState: typeof pickerState) => {
@@ -434,6 +376,111 @@ export default function AddScreen() {
       return `${date.toLocaleDateString()} at ${timeStr}`;
     }
   };
+
+  // Reminder Options Modal
+  const ReminderOptionsModal = () => (
+    <Modal
+      visible={showReminderOptions}
+      transparent={true}
+      animationType="fade"
+      onRequestClose={() => setShowReminderOptions(false)}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={[styles.reminderOptionsModal, { backgroundColor: colors.card }]}>
+          <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>
+              Set Reminder
+            </Text>
+            <TouchableOpacity
+              style={styles.modalCloseButton}
+              onPress={() => setShowReminderOptions(false)}
+            >
+              <X size={20} color={colors.textMuted} />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.reminderOptionsContent}>
+            <Text style={[styles.reminderOptionsSubtitle, { color: colors.textMuted }]}>
+              {Platform.OS === 'web' 
+                ? 'Choose when you\'d like to be reminded about this link:'
+                : 'When would you like to be reminded?'
+              }
+            </Text>
+
+            {reminder && (
+              <TouchableOpacity
+                style={[styles.reminderOption, styles.removeReminderOption, { 
+                  backgroundColor: colors.error + '15',
+                  borderColor: colors.error + '30'
+                }]}
+                onPress={() => {
+                  setReminder(null);
+                  setShowReminderOptions(false);
+                }}
+              >
+                <X size={20} color={colors.error} />
+                <Text style={[styles.reminderOptionText, { color: colors.error }]}>
+                  Remove Reminder
+                </Text>
+              </TouchableOpacity>
+            )}
+
+            <TouchableOpacity
+              style={[styles.reminderOption, { 
+                backgroundColor: colors.surface,
+                borderColor: colors.border
+              }]}
+              onPress={() => setQuickReminder('hour')}
+            >
+              <Clock size={20} color={colors.primary} />
+              <Text style={[styles.reminderOptionText, { color: colors.text }]}>
+                In 1 hour
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.reminderOption, { 
+                backgroundColor: colors.surface,
+                borderColor: colors.border
+              }]}
+              onPress={() => setQuickReminder('tomorrow')}
+            >
+              <Calendar size={20} color={colors.primary} />
+              <Text style={[styles.reminderOptionText, { color: colors.text }]}>
+                Tomorrow 9 AM
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.reminderOption, { 
+                backgroundColor: colors.surface,
+                borderColor: colors.border
+              }]}
+              onPress={() => setQuickReminder('week')}
+            >
+              <Calendar size={20} color={colors.primary} />
+              <Text style={[styles.reminderOptionText, { color: colors.text }]}>
+                Next week
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.reminderOption, { 
+                backgroundColor: colors.primaryMuted,
+                borderColor: colors.primary + '30'
+              }]}
+              onPress={showCustomDateTimePicker}
+            >
+              <Calendar size={20} color={colors.primary} />
+              <Text style={[styles.reminderOptionText, { color: colors.primary }]}>
+                Custom Date & Time
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
 
   // Date/Time picker component with batched updates
   const DateTimePicker = () => {
@@ -1025,6 +1072,9 @@ export default function AddScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* Reminder Options Modal */}
+        <ReminderOptionsModal />
+
         {/* Date Time Picker Modal */}
         <DateTimePicker />
       </KeyboardAvoidingView>
@@ -1179,7 +1229,46 @@ const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  reminderOptionsModal: {
+    width: '90%',
+    maxWidth: 400,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 10,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  reminderOptionsContent: {
+    padding: 20,
+  },
+  reminderOptionsSubtitle: {
+    fontSize: 14,
+    fontFamily: 'Inter-Regular',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  reminderOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginBottom: 12,
+  },
+  removeReminderOption: {
+    marginBottom: 20,
+  },
+  reminderOptionText: {
+    fontSize: 16,
+    fontFamily: 'Inter-SemiBold',
+    marginLeft: 12,
   },
   modalKeyboardAvoid: {
     justifyContent: 'flex-end',
