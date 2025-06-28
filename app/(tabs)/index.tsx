@@ -27,16 +27,33 @@ export default function HomeScreen() {
         StorageService.getCollections(),
         StorageService.isWelcomeDismissed()
       ]);
+      
+      console.log('Loading data:', {
+        linksCount: savedLinks.length,
+        collectionsCount: savedCollections.length,
+        welcomeDismissed
+      });
+      
       setLinks(savedLinks);
       setCollections(savedCollections);
       
-      // Only show welcome card if it hasn't been permanently dismissed
+      // Show welcome card if:
+      // 1. Welcome hasn't been permanently dismissed
+      // 2. Default collection exists
+      // 3. User hasn't added custom links (only default links exist)
       if (!welcomeDismissed) {
         const hasDefaultCollection = savedCollections.some(c => c.id === 'default-bolt-hackathon');
         const hasCustomLinks = savedLinks.some(l => !l.id?.startsWith('default-link-'));
-        setShowWelcome(hasDefaultCollection && !hasCustomLinks);
+        const shouldShowWelcome = hasDefaultCollection && !hasCustomLinks;
+        
+        console.log('Welcome card logic:', {
+          hasDefaultCollection,
+          hasCustomLinks,
+          shouldShowWelcome
+        });
+        
+        setShowWelcome(shouldShowWelcome);
       } else {
-        // If welcome was dismissed, never show it again
         setShowWelcome(false);
       }
     } catch (error) {
@@ -131,6 +148,7 @@ export default function HomeScreen() {
     try {
       await StorageService.setWelcomeDismissed();
       setShowWelcome(false);
+      console.log('Welcome card dismissed permanently');
     } catch (error) {
       console.error('Error dismissing welcome card:', error);
       // Still hide the welcome card even if storage fails
@@ -312,7 +330,7 @@ export default function HomeScreen() {
         </View>
       )}
 
-      {/* Welcome Card */}
+      {/* Welcome Card - Show prominently when conditions are met */}
       {showWelcome && (
         <WelcomeCard onDismiss={handleWelcomeDismiss} />
       )}
