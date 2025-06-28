@@ -32,35 +32,57 @@ export default function SettingsScreen() {
   };
 
   const handleClearAllData = () => {
-    Alert.alert(
-      'Clear All Data',
-      'This will permanently delete all your links and collections. This action cannot be undone.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Delete All', 
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await StorageService.saveLinks([]);
-              await StorageService.saveCollections([]);
-              await NotificationService.cancelAllNotifications();
-              setLinkCount(0);
-              setCollectionCount(0);
-              Alert.alert('Success', 'All data has been cleared.');
-            } catch (error) {
-              console.error('Error clearing data:', error);
-              Alert.alert('Error', 'Failed to clear data.');
-            }
+    const confirmMessage = 'This will permanently delete all your links and collections. This action cannot be undone.';
+    
+    if (Platform.OS === 'web') {
+      if (confirm(confirmMessage)) {
+        performClearData();
+      }
+    } else {
+      Alert.alert(
+        'Clear All Data',
+        confirmMessage,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { 
+            text: 'Delete All', 
+            style: 'destructive',
+            onPress: performClearData
           }
-        }
-      ]
-    );
+        ]
+      );
+    }
+  };
+
+  const performClearData = async () => {
+    try {
+      await StorageService.saveLinks([]);
+      await StorageService.saveCollections([]);
+      await NotificationService.cancelAllNotifications();
+      setLinkCount(0);
+      setCollectionCount(0);
+      
+      const successMessage = 'All data has been cleared.';
+      if (Platform.OS === 'web') {
+        alert(successMessage);
+      } else {
+        Alert.alert('Success', successMessage);
+      }
+    } catch (error) {
+      console.error('Error clearing data:', error);
+      const errorMessage = 'Failed to clear data.';
+      if (Platform.OS === 'web') {
+        alert(errorMessage);
+      } else {
+        Alert.alert('Error', errorMessage);
+      }
+    }
   };
 
   const handleExportData = async () => {
     if (Platform.OS !== 'web') {
-      Alert.alert('Not Available', 'Data export is only available on web platform.');
+      const message = 'Data export is only available on web platform.';
+      Alert.alert('Not Available', message);
       return;
     }
 
@@ -92,10 +114,10 @@ export default function SettingsScreen() {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
-      Alert.alert('Export Complete', 'Your data has been downloaded successfully!');
+      alert('Your data has been downloaded successfully!');
     } catch (error) {
       console.error('Error exporting data:', error);
-      Alert.alert('Error', 'Failed to export data. Please try again.');
+      alert('Failed to export data. Please try again.');
     } finally {
       setIsExporting(false);
     }
@@ -126,56 +148,75 @@ export default function SettingsScreen() {
         }
 
         // Show confirmation dialog
-        Alert.alert(
-          'Import Data',
-          `This will replace all your current data with the backup from ${new Date(importData.exportedAt).toLocaleDateString()}.\n\nBackup contains:\n• ${importData.links.length} links\n• ${importData.collections.length} collections\n\nThis action cannot be undone.`,
-          [
-            { text: 'Cancel', style: 'cancel' },
-            {
-              text: 'Import',
-              style: 'destructive',
-              onPress: async () => {
-                try {
-                  // Cancel all existing notifications
-                  await NotificationService.cancelAllNotifications();
-                  
-                  // Import the data
-                  await StorageService.saveLinks(importData.links);
-                  await StorageService.saveCollections(importData.collections);
-                  
-                  // Reschedule notifications for imported links with reminders
-                  for (const link of importData.links) {
-                    if (link.reminder && new Date(link.reminder) > new Date()) {
-                      await NotificationService.scheduleNotification(
-                        'Link Reminder',
-                        `Remember to check: ${link.title}`,
-                        new Date(link.reminder),
-                        `link_${link.id}`
-                      );
-                    }
-                  }
-                  
-                  // Update stats
-                  await loadStats();
-                  
-                  Alert.alert('Import Complete', 'Your data has been imported successfully!');
-                } catch (error) {
-                  console.error('Error importing data:', error);
-                  Alert.alert('Error', 'Failed to import data. Please try again.');
-                }
+        const confirmMessage = `This will replace all your current data with the backup from ${new Date(importData.exportedAt).toLocaleDateString()}.\n\nBackup contains:\n• ${importData.links.length} links\n• ${importData.collections.length} collections\n\nThis action cannot be undone.`;
+        
+        if (confirm(confirmMessage)) {
+          try {
+            // Cancel all existing notifications
+            await NotificationService.cancelAllNotifications();
+            
+            // Import the data
+            await StorageService.saveLinks(importData.links);
+            await StorageService.saveCollections(importData.collections);
+            
+            // Reschedule notifications for imported links with reminders
+            for (const link of importData.links) {
+              if (link.reminder && new Date(link.reminder) > new Date()) {
+                await NotificationService.scheduleNotification(
+                  'Link Reminder',
+                  `Remember to check: ${link.title}`,
+                  new Date(link.reminder),
+                  `link_${link.id}`
+                );
               }
             }
-          ]
-        );
+            
+            // Update stats
+            await loadStats();
+            
+            alert('Your data has been imported successfully!');
+          } catch (error) {
+            console.error('Error importing data:', error);
+            alert('Failed to import data. Please try again.');
+          }
+        }
       } catch (error) {
         console.error('Error reading import file:', error);
-        Alert.alert('Error', 'Invalid backup file. Please select a valid Linklit backup file.');
+        alert('Invalid backup file. Please select a valid Linklit backup file.');
       } finally {
         setIsImporting(false);
       }
     };
     
     input.click();
+  };
+
+  const handleAboutPress = () => {
+    const aboutMessage = 'Linklit is a minimalist app for saving and organizing links. Built with love for simplicity and focus.\n\nVersion: 1.0.0\nBuilt with: React Native & Expo\n\nFeatures:\n• Save and organize links\n• Create custom collections\n• Set reminders for links\n• Export/import your data\n• Beautiful, minimal design';
+    
+    if (Platform.OS === 'web') {
+      alert(aboutMessage);
+    } else {
+      Alert.alert('About Linklit', aboutMessage);
+    }
+  };
+
+  const handleRatePress = () => {
+    const message = 'App Store rating coming soon!';
+    if (Platform.OS === 'web') {
+      alert(message);
+    } else {
+      Alert.alert('Thank You!', message);
+    }
+  };
+
+  const handleNotificationSettings = () => {
+    const message = 'Advanced notification settings will be available in a future update.';
+    if (Platform.OS === 'web') {
+      alert(message);
+    } else {
+      Alert.alert('Coming Soon', message);
+    }
   };
 
   const SettingRow = ({ 
@@ -265,7 +306,7 @@ export default function SettingsScreen() {
             icon={<Bell size={20} color={colors.textMuted} />}
             title="Notification Settings"
             subtitle="Manage reminder notifications"
-            onPress={() => Alert.alert('Coming Soon', 'Advanced notification settings will be available in a future update.')}
+            onPress={handleNotificationSettings}
           />
         </View>
 
@@ -338,16 +379,13 @@ export default function SettingsScreen() {
             icon={<Info size={20} color={colors.textMuted} />}
             title="About Linklit"
             subtitle="Version 1.0.0"
-            onPress={() => Alert.alert(
-              'About Linklit',
-              'Linklit is a minimalist app for saving and organizing links. Built with love for simplicity and focus.\n\nVersion: 1.0.0\nBuilt with: React Native & Expo\n\nFeatures:\n• Save and organize links\n• Create custom collections\n• Set reminders for links\n• Export/import your data\n• Beautiful, minimal design'
-            )}
+            onPress={handleAboutPress}
           />
           <SettingRow
             icon={<Star size={20} color={colors.textMuted} />}
             title="Rate the App"
             subtitle="Help us improve Linklit"
-            onPress={() => Alert.alert('Thank You!', 'App Store rating coming soon!')}
+            onPress={handleRatePress}
           />
         </View>
 
