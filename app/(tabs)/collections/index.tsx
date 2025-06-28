@@ -168,8 +168,9 @@ export default function CollectionsScreen() {
         <View>
           <Text style={[styles.title, { color: colors.text }]}>Collections</Text>
           <Text style={[styles.subtitle, { color: colors.textMuted }]}>
-            {String(collections.length)} total • {String(activeCount)} active • {String(completedCount)} completed
+            {(collections?.length ?? 0)} total • {(activeCount ?? 0)} active • {(completedCount ?? 0)} completed
           </Text>
+
         </View>
         <TouchableOpacity
           style={[styles.addButton, { backgroundColor: colors.primary }]}
