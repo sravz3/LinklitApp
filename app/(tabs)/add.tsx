@@ -283,71 +283,75 @@ export default function AddScreen() {
 
   const handleSetReminder = () => {
     // Show quick options and custom date/time option
+    const reminderOptions = [
+      { text: 'Cancel', style: 'cancel' as const },
+      ...(reminder ? [{ 
+        text: 'Remove Reminder', 
+        style: 'destructive' as const,
+        onPress: () => setReminder(null)
+      }] : []),
+      { 
+        text: 'In 1 hour', 
+        onPress: () => {
+          const reminderTime = new Date();
+          reminderTime.setHours(reminderTime.getHours() + 1);
+          setReminder(reminderTime);
+        }
+      },
+      { 
+        text: 'Tomorrow 9 AM', 
+        onPress: () => {
+          const reminderTime = new Date();
+          reminderTime.setDate(reminderTime.getDate() + 1);
+          reminderTime.setHours(9, 0, 0, 0);
+          setReminder(reminderTime);
+        }
+      },
+      { 
+        text: 'Next week', 
+        onPress: () => {
+          const reminderTime = new Date();
+          reminderTime.setDate(reminderTime.getDate() + 7);
+          reminderTime.setHours(9, 0, 0, 0);
+          setReminder(reminderTime);
+        }
+      },
+      {
+        text: 'Custom Date & Time',
+        onPress: () => {
+          // Initialize with current reminder or default to tomorrow 9 AM
+          const defaultTime = reminder || (() => {
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            tomorrow.setHours(9, 0, 0, 0);
+            return tomorrow;
+          })();
+          
+          // Set time picker values
+          const hours24 = defaultTime.getHours();
+          const minutes = defaultTime.getMinutes();
+          const hours12 = hours24 === 0 ? 12 : hours24 > 12 ? hours24 - 12 : hours24;
+          const ampm = hours24 < 12;
+          
+          setPickerState({
+            selectedDate: new Date(defaultTime),
+            currentMonth: new Date(defaultTime),
+            selectedHour: hours12,
+            selectedMinute: minutes,
+            isAM: ampm
+          });
+          
+          setShowDateTimePicker(true);
+        }
+      }
+    ];
+
     Alert.alert(
       'Set Reminder',
-      'When would you like to be reminded?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        ...(reminder ? [{ 
-          text: 'Remove Reminder', 
-          style: 'destructive',
-          onPress: () => setReminder(null)
-        }] : []),
-        { 
-          text: 'In 1 hour', 
-          onPress: () => {
-            const reminderTime = new Date();
-            reminderTime.setHours(reminderTime.getHours() + 1);
-            setReminder(reminderTime);
-          }
-        },
-        { 
-          text: 'Tomorrow 9 AM', 
-          onPress: () => {
-            const reminderTime = new Date();
-            reminderTime.setDate(reminderTime.getDate() + 1);
-            reminderTime.setHours(9, 0, 0, 0);
-            setReminder(reminderTime);
-          }
-        },
-        { 
-          text: 'Next week', 
-          onPress: () => {
-            const reminderTime = new Date();
-            reminderTime.setDate(reminderTime.getDate() + 7);
-            reminderTime.setHours(9, 0, 0, 0);
-            setReminder(reminderTime);
-          }
-        },
-        {
-          text: 'Custom Date & Time',
-          onPress: () => {
-            // Initialize with current reminder or default to tomorrow 9 AM
-            const defaultTime = reminder || (() => {
-              const tomorrow = new Date();
-              tomorrow.setDate(tomorrow.getDate() + 1);
-              tomorrow.setHours(9, 0, 0, 0);
-              return tomorrow;
-            })();
-            
-            // Set time picker values
-            const hours24 = defaultTime.getHours();
-            const minutes = defaultTime.getMinutes();
-            const hours12 = hours24 === 0 ? 12 : hours24 > 12 ? hours24 - 12 : hours24;
-            const ampm = hours24 < 12;
-            
-            setPickerState({
-              selectedDate: new Date(defaultTime),
-              currentMonth: new Date(defaultTime),
-              selectedHour: hours12,
-              selectedMinute: minutes,
-              isAM: ampm
-            });
-            
-            setShowDateTimePicker(true);
-          }
-        }
-      ]
+      Platform.OS === 'web' 
+        ? 'When would you like to be reminded? (Reminders will appear in the app)'
+        : 'When would you like to be reminded?',
+      reminderOptions
     );
   };
 
@@ -700,7 +704,10 @@ export default function AddScreen() {
                 }]}>
                   <Calendar size={16} color={colors.primary} />
                   <Text style={[styles.previewText, { color: colors.primary }]}>
-                    Reminder will be set for {formatReminderText(getPreviewDateTime())}
+                    {Platform.OS === 'web' 
+                      ? `Reminder will appear in the app on ${formatReminderText(getPreviewDateTime())}`
+                      : `Reminder will be set for ${formatReminderText(getPreviewDateTime())}`
+                    }
                   </Text>
                 </View>
               </View>
@@ -947,7 +954,9 @@ export default function AddScreen() {
               ]}>
                 {reminder 
                   ? formatReminderText(reminder)
-                  : 'Set reminder (optional)'
+                  : Platform.OS === 'web' 
+                    ? 'Set reminder (will appear in app)'
+                    : 'Set reminder (optional)'
                 }
               </Text>
             </TouchableOpacity>

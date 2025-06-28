@@ -12,7 +12,8 @@ Notifications.setNotificationHandler({
 export const NotificationService = {
   async requestPermissions(): Promise<boolean> {
     if (Platform.OS === 'web') {
-      return false;
+      // On web, we'll handle reminders through the UI instead of notifications
+      return true;
     }
     
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
@@ -33,7 +34,9 @@ export const NotificationService = {
     identifier?: string
   ): Promise<string | null> {
     if (Platform.OS === 'web') {
-      return null;
+      // On web, we don't schedule actual notifications but return a mock ID
+      // The reminder will be handled through the UI
+      return identifier || `web_reminder_${Date.now()}`;
     }
 
     try {
@@ -58,6 +61,7 @@ export const NotificationService = {
 
   async cancelNotification(notificationId: string): Promise<void> {
     if (Platform.OS === 'web') {
+      // On web, we don't need to cancel actual notifications
       return;
     }
 
@@ -70,6 +74,7 @@ export const NotificationService = {
 
   async cancelAllNotifications(): Promise<void> {
     if (Platform.OS === 'web') {
+      // On web, we don't need to cancel actual notifications
       return;
     }
 
@@ -78,5 +83,27 @@ export const NotificationService = {
     } catch (error) {
       console.error('Error canceling all notifications:', error);
     }
+  },
+
+  // Web-specific reminder checking
+  checkWebReminders(links: any[]): { overdueCount: number; upcomingCount: number } {
+    if (Platform.OS !== 'web') {
+      return { overdueCount: 0, upcomingCount: 0 };
+    }
+
+    const now = new Date();
+    const activeLinksWithReminders = links.filter(link => 
+      !link.isCompleted && link.reminder
+    );
+    
+    const overdueCount = activeLinksWithReminders.filter(link => 
+      new Date(link.reminder).getTime() < now.getTime()
+    ).length;
+    
+    const upcomingCount = activeLinksWithReminders.filter(link => 
+      new Date(link.reminder).getTime() >= now.getTime()
+    ).length;
+    
+    return { overdueCount, upcomingCount };
   }
 };
