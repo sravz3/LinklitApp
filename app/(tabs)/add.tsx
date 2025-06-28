@@ -355,12 +355,33 @@ export default function AddScreen() {
   };
 
   const handleSetReminder = () => {
-    if (Platform.OS === 'web') {
-      // On web, show the options directly without additional explanation
+    console.log('Reminder button clicked'); // Debug log
+    try {
       showReminderOptions();
-    } else {
-      // On mobile, show the standard reminder options
-      showReminderOptions();
+    } catch (error) {
+      console.error('Error showing reminder options:', error);
+      // Fallback: directly show the date/time picker
+      const defaultTime = reminder || (() => {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setHours(9, 0, 0, 0);
+        return tomorrow;
+      })();
+      
+      const hours24 = defaultTime.getHours();
+      const minutes = defaultTime.getMinutes();
+      const hours12 = hours24 === 0 ? 12 : hours24 > 12 ? hours24 - 12 : hours24;
+      const ampm = hours24 < 12;
+      
+      setPickerState({
+        selectedDate: new Date(defaultTime),
+        currentMonth: new Date(defaultTime),
+        selectedHour: hours12,
+        selectedMinute: minutes,
+        isAM: ampm
+      });
+      
+      setShowDateTimePicker(true);
     }
   };
 
@@ -955,6 +976,7 @@ export default function AddScreen() {
               }]}
               onPress={handleSetReminder}
               disabled={loading}
+              activeOpacity={0.7}
             >
               <Clock size={16} color={reminder ? colors.primary : colors.textMuted} />
               <Text style={[
